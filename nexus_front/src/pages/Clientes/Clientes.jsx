@@ -1,114 +1,82 @@
 import { useState, useEffect } from 'react';
-import api from '../../service/api';
+import api from '../../service/api.js';
+import { toast } from 'react-toastify';
+import './Clientes.css';
 
 export default function Clientes() {
-  // Estados para armazenar a lista de clientes e os dados do formulário
   const [clientes, setClientes] = useState([]);
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    telefone: '',
-    cpf: ''
-  });
+  const [formData, setFormData] = useState({ nome: '', email: '', telefone: '', cpf: '' });
 
-  // Função para buscar os clientes no Back-end (Spring Boot)
-  const buscarClientes = async () => {
+  useEffect(() => {
+    let ativo = true;
+
+    const buscarClientes = async () => {
+      try {
+        const response = await api.get('/clientes');
+        if (ativo) setClientes(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar clientes:", error);
+      }
+    };
+
+    buscarClientes();
+    return () => { ativo = false; };
+  }, []);
+
+  const buscarClientesAtualizado = async () => {
     try {
       const response = await api.get('/clientes');
       setClientes(response.data);
     } catch (error) {
-      console.error("Erro ao buscar clientes:", error);
-      alert("Não foi possível carregar a lista de clientes. Verifique se o Back-end está rodando.");
+      console.error(error);
     }
   };
 
-  // Executa a busca assim que a tela abre
-  useEffect(() => {
-  let ativo = true;
-
-  const carregarDados = async () => {
-    try {
-      const response = await api.get('/clientes');
-      if (ativo) {
-        setClientes(response.data);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar clientes:", error);
-    }
-  };
-
-  carregarDados();
-
-  // Função de limpeza (cleanup) para evitar renderizações em cascata se o componente desmontar
-  return () => {
-    ativo = false;
-  };
-}, []);
-
-  // Atualiza os dados do formulário conforme o usuário digita
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Envia os dados para o Back-end ao clicar no botão
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await api.post('/clientes', formData);
-      alert('Cliente cadastrado com sucesso!');
-      // Limpa o formulário
+      toast.success('Cliente cadastrado com sucesso! 🎉');
       setFormData({ nome: '', email: '', telefone: '', cpf: '' });
-      // Atualiza a tabela com o novo cliente
-      buscarClientes();
+      buscarClientesAtualizado();
     } catch (error) {
-      console.error("Erro ao cadastrar cliente:", error);
-      alert("Erro ao cadastrar cliente. Verifique os dados.");
+      console.error("Erro ao atualizar lista de clientes:", error);
+      toast.error('Erro ao cadastrar cliente. Verifique os dados.');
     }
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+    <div className="page-container">
       <h2>Gestão de Clientes</h2>
       
-      {/* Formulário de Cadastro */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px', marginBottom: '30px' }}>
-        <input type="text" name="nome" placeholder="Nome Completo" value={formData.nome} onChange={handleChange} required style={{ padding: '8px' }} />
-        <input type="email" name="email" placeholder="E-mail" value={formData.email} onChange={handleChange} required style={{ padding: '8px' }} />
-        <input type="text" name="telefone" placeholder="Telefone" value={formData.telefone} onChange={handleChange} required style={{ padding: '8px' }} />
-        <input type="text" name="cpf" placeholder="CPF" value={formData.cpf} onChange={handleChange} required style={{ padding: '8px' }} />
-        <button type="submit" style={{ padding: '10px', backgroundColor: '#0284c7', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Cadastrar Cliente
-        </button>
+      <form onSubmit={handleSubmit} className="form-group">
+        <input type="text" name="nome" placeholder="Nome Completo" value={formData.nome} onChange={handleChange} required className="form-input" />
+        <input type="email" name="email" placeholder="E-mail" value={formData.email} onChange={handleChange} required className="form-input" />
+        <input type="text" name="telefone" placeholder="Telefone" value={formData.telefone} onChange={handleChange} required className="form-input" />
+        <input type="text" name="cpf" placeholder="CPF" value={formData.cpf} onChange={handleChange} required className="form-input" />
+        <button type="submit" className="btn-submit-cliente">Cadastrar Cliente</button>
       </form>
 
       <hr />
 
-      {/* Tabela de Listagem */}
       <h3>Clientes Cadastrados</h3>
-      <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', marginTop: '10px' }}>
-        <thead style={{ backgroundColor: '#f1f5f9' }}>
+      <table className="data-table">
+        <thead className="table-header">
           <tr>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Telefone</th>
-            <th>CPF</th>
+            <th>Nome</th><th>E-mail</th><th>Telefone</th><th>CPF</th>
           </tr>
         </thead>
         <tbody>
           {clientes.length === 0 ? (
-            <tr>
-              <td colSpan="4" style={{ textAlign: 'center' }}>Nenhum cliente encontrado ou aguardando conexão com a API.</td>
-            </tr>
+            <tr><td colSpan="4" className="no-data">Nenhum cliente cadastrado.</td></tr>
           ) : (
             clientes.map((cliente, index) => (
               <tr key={index}>
-                <td>{cliente.nome}</td>
-                <td>{cliente.email}</td>
-                <td>{cliente.telefone}</td>
-                <td>{cliente.cpf}</td>
+                <td>{cliente.nome}</td><td>{cliente.email}</td><td>{cliente.telefone}</td><td>{cliente.cpf}</td>
               </tr>
             ))
           )}

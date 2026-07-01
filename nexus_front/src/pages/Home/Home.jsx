@@ -1,16 +1,17 @@
+import './Home.css';
 
 export default function Home() {
   return (
-    <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+    <div className="home-container">
       <h1>Bem-vindo ao ERP Nexus</h1>
       <p>Sistema de Gestão Interna de Clientes e Funcionários.</p>
-      <hr style={{ margin: '20px 0', borderColor: '#eee' }} />
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '20px' }}>
-        <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', width: '200px' }}>
+      <hr className="home-divider" />
+      <div className="home-cards">
+        <div className="home-card">
           <h3>Clientes</h3>
           <p>Gerencie os parceiros de negócios.</p>
         </div>
-        <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', width: '200px' }}>
+        <div className="home-card">
           <h3>Funcionários</h3>
           <p>Controle a equipe e setores internos.</p>
         </div>
